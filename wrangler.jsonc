@@ -38,11 +38,9 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	"vars": {
-		"production": {
-			"NODE_VERSION": "22.15.0"
-		}
+		"NODE_VERSION": "22.15.0"
 	}
-	/**
+		/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */

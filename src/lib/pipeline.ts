@@ -2,7 +2,7 @@ import { Adapter } from "./adapter";
 import { GrayColorizer, PanelDetectionInput, PanelDetectionOutput } from "./cv/panel-detection";
 
 export class Pipeline<S, D> {
-  constructor(private adapters: Adapter<any, any>[]) {}
+  constructor(private name: string | null, private adapters: Adapter<any, any>[]) {}
 
   static builder<S, D>() {
     return new PipelineBuilder<S, D>();
@@ -12,7 +12,7 @@ export class Pipeline<S, D> {
     let output: any = input;
     this.adapters.forEach((adapter, index) => {
       output = adapter.convert(output);   
-      console.log(`Pipeline step ${index} - ${adapter.constructor.name}: completed`);
+      console.log(`Pipeline ${this.name} - step ${index} - ${adapter.constructor.name}: completed`);
     });
     return output;
   }
@@ -20,10 +20,15 @@ export class Pipeline<S, D> {
 
 // order matter !!!
 export class PipelineBuilder<S, D> {
-  constructor(private adapters: Adapter<any, any>[] = []) {}
+  constructor(private _name: string | null = null,  private _adapters: Adapter<any, any>[] = []) {}
 
   private add(adapter: Adapter<any, any>) {
-    this.adapters.push(adapter);
+    this._adapters.push(adapter);
+    return this;
+  }
+
+  name(name: string) {
+    this._name = name;
     return this;
   }
 
@@ -32,6 +37,6 @@ export class PipelineBuilder<S, D> {
   }
 
   build() {
-    return new Pipeline<S, D>(this.adapters);
+    return new Pipeline<S, D>(this._name, this._adapters);
   }
 }

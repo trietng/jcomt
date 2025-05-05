@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Pipeline } from "@/lib/pipeline"
 import { PanelDetectionAdapter, PanelDetectionInput, PanelDetectionOutput } from "@/lib/cv/panel-detection"
-import { DataUrlToPanelDetectionInput, MatToDataUrlAdapter } from "@/lib/cv/utils"
+import { DataUrlToPanelDetectionInputAdapter, MatToDataUrlAdapter } from "@/lib/cv/utils"
 
 export default function ImageUploadPage() {
   const [image, setImage] = useState<string | null>(null)
@@ -32,7 +32,7 @@ export default function ImageUploadPage() {
 
   const handleTranslation = async () => {
     if (!image) return;
-    const preprocessor = new DataUrlToPanelDetectionInput((mat) => {
+    const preprocessor = new DataUrlToPanelDetectionInputAdapter((mat) => {
       const adapter = new MatToDataUrlAdapter();
       adapter.convert(mat).then((dataUrl) => {
         setImage(dataUrl);
@@ -40,6 +40,7 @@ export default function ImageUploadPage() {
     })
     const preprocessed = await preprocessor.convert(image);
     const pipeline = Pipeline.builder<PanelDetectionInput, PanelDetectionOutput>()
+      .name("panel_detection")
       .splitter(new PanelDetectionAdapter())
       .build();
     const output = pipeline.run(preprocessed);

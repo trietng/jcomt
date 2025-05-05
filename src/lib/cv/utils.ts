@@ -92,7 +92,7 @@ export class OpenCVUtils {
   }
 }
 
-export class DataUrlToPanelDetectionInput implements AsyncAdapter<string, PanelDetectionInput> {
+export class DataUrlToPanelDetectionInputAdapter implements AsyncAdapter<string, PanelDetectionInput> {
   constructor(private displayCallback?: (image: cv.Mat) => void) {}
 
    async convert(dataUrl: string): Promise<PanelDetectionInput> {

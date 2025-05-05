@@ -4,7 +4,6 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 export const runtime = 'edge';
 
 export async function POST(request: Request) {
-  let x: any;
   try {
     const { env } = getRequestContext();
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
@@ -30,8 +29,6 @@ export async function POST(request: Request) {
     // Get optional parameters if any
     const targetLanguage = formData.get('targetLanguage')?.toString() || 'Vietnamese';
     
-    x = "before convert file to base64"
-
     // Convert file to base64
     const arrayBuffer = await imageFile.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
@@ -40,8 +37,6 @@ export async function POST(request: Request) {
       binary += String.fromCharCode(byte);
     });
     const base64 = btoa(binary);
-
-    x = "before Gemini API call"
     
     // Call Gemini API with the image and translation prompt
     const response = await ai.models.generateContent({
@@ -89,8 +84,6 @@ export async function POST(request: Request) {
         },
       },
     });
-
-    x = "before response"
     
     // Return the response
     return new Response(response.text, { 
@@ -102,7 +95,7 @@ export async function POST(request: Request) {
     
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: "Failed to translate image content", details: x }), 
+      JSON.stringify({ error: "Failed to translate image content" }), 
       { 
         status: 500,
         headers: {

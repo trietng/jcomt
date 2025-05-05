@@ -9,6 +9,7 @@ export async function POST(request: Request) {
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
     
     // Parse the FormData from the request
+    console.log(request)
     const formData = await request.formData();
     
     // Get the image file from the form data
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
           }
         },
         {
-          text: `Translate the English texts in the comic page to ${targetLanguage}. Take into account the gender of the speaker and keep newlines.`
+          text: `Translate the texts in the comic page to ${targetLanguage}. Keep newlines. Take into account the gender and age of the speakers and their possible relationships.`
         }
       ]),
       config: {
@@ -68,9 +69,18 @@ export async function POST(request: Request) {
                 type: Type.STRING,
                 description: 'Translated text in all caps',
                 nullable: false,
+              },
+              'box_2d': {
+                type: Type.ARRAY,
+                description: "Bounding box data of format [y_min, x_min, y_max, x_max]",
+                nullable: false,
+                items: {
+                  type: Type.NUMBER,
+                  nullable: false
+                }
               }
             },
-            required: ['text', 'translated_text'],
+            required: ['text', 'translated_text', 'box_2d'],
           },
         },
       },
@@ -85,7 +95,7 @@ export async function POST(request: Request) {
     });
     
   } catch (error) {
-    console.error("Error translating image:", error);
+    console.error(error);
     return new Response(
       JSON.stringify({ error: "Failed to translate image content" }), 
       { 

@@ -33,7 +33,7 @@ export function Sidebar({ translations }: SidebarProps) {
   }
 
   useEffect(() => {
-    if (translations) {
+    if (translations instanceof Array) {
       const groups = translations.map((translation) => {
         const doc = wink.readDoc(translation.text.trim());
         return doc.tokens().out();

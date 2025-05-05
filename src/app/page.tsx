@@ -11,7 +11,7 @@ import type { Translation } from "@/lib/common/model"
 import { drawTranslations } from "@/lib/canvas/draw"
 import { Sidebar } from "@/components/sidebar"
 
-type IndexStatus = "idle" | "uploading" | "translating" | "translated" | "drawed"
+type IndexStatus = "idle" | "uploading" | "ready" | "translating" | "translated" | "drawed"
 
 const doTranslate = fake<Translation[]>([
   {
@@ -61,13 +61,13 @@ export default function IndexPage() {
       reader.onloadend = () => {
         setImage(reader.result as string)
         event.target.value = ""
-        setStatus("idle")
+        setStatus("ready")
         setTranslations(null)
         setSidebarOpen(false)
       }
       reader.readAsDataURL(file)
     } else {
-      setStatus("idle")
+      setStatus("ready")
     }
   }
 
@@ -148,7 +148,7 @@ export default function IndexPage() {
 
       {/* Action buttons */}
       <div className="flex flex-col gap-2 p-2 absolute right-0 top-0 bg-black/20 rounded-md">
-        <Button className="size-12 cursor-pointer" onClick={() => handleTranslation()} disabled={status !== "idle"}>
+        <Button className="size-12 cursor-pointer" onClick={() => handleTranslation()} disabled={status !== "ready"}>
           <Languages size={18} />
         </Button>
         <Button className="size-12 cursor-pointer" onClick={() => handlePaint()} disabled={status !== "translated"}>
@@ -175,7 +175,7 @@ export default function IndexPage() {
             <X size={16} />
           </Button>
         </div>
-        <Sidebar translations={translations || []} />
+        <Sidebar translations={translations} />
       </div>
 
       {/* Toggle sidebar button */}

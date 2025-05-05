@@ -2,12 +2,12 @@
 import { Card } from "@/components/ui/card"
 import type { Translation } from "@/lib/common/model"
 import { TokenizedText } from "./tokenized-text"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { wink } from "@/lib/nlp"
 import { getDictionaryDefinition } from "@/lib/dictionary"
 
 interface SidebarProps {
-  translations: Translation[]
+  translations: Translation[] | null;
 }
 
 export function Sidebar({ translations }: SidebarProps) {
@@ -28,10 +28,17 @@ export function Sidebar({ translations }: SidebarProps) {
   }
 
   const tokenGroups = useMemo(() => {
-    return translations.map((translation) => {
+    return (translations || []).map((translation) => {
       const doc = wink.readDoc(translation.text.trim());
       return doc.tokens().out();
     })
+  }, [translations]);
+
+  useEffect(() => {
+    if (!translations) {
+      setSelectedToken(null)
+      setDefinition(null)
+    }
   }, [translations]);
 
   return (

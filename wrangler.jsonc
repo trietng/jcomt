@@ -19,7 +19,7 @@
       "database_name": "jcomt",
       "database_id": "152f02a5-df0f-4d0c-9949-8d85c1714334"
     }
-	],
+	]
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -37,7 +37,7 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	"vars": { "NODE_VERSION": "22.15.0" },
+	// "vars": { "MY_VARIABLE": "production_value" },
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/

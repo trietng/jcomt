@@ -13,6 +13,7 @@ interface SidebarProps {
 export function Sidebar({ translations }: SidebarProps) {
   const [selectedToken, setSelectedToken] = useState<string | null>(null)
   const [definition, setDefinition] = useState<string | null>(null)
+  const [tokenGroups, setTokenGroups] = useState<string[][]>([]);
 
   const handleTokenClick = async (token: string) => {
     const cleanToken = token.toLowerCase().replace(/[^\w']/g, "")
@@ -31,12 +32,14 @@ export function Sidebar({ translations }: SidebarProps) {
     }
   }
 
-  const tokenGroups = useMemo(() => {
-    if (!translations) return []
-    return translations.map((translation) => {
-      const doc = wink.readDoc(translation.text.trim());
-      return doc.tokens().out();
-    })
+  useEffect(() => {
+    if (translations) {
+      const groups = translations.map((translation) => {
+        const doc = wink.readDoc(translation.text.trim());
+        return doc.tokens().out();
+      })
+      setTokenGroups(groups)
+    }
   }, [translations]);
 
   useEffect(() => {
@@ -72,4 +75,3 @@ export function Sidebar({ translations }: SidebarProps) {
     </div>
   )
 }
-

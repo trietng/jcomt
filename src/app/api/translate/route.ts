@@ -94,9 +94,8 @@ export async function POST(request: Request) {
     });
     
   } catch (error) {
-    console.error(error);
     return new Response(
-      JSON.stringify({ error: "Failed to translate image content" }), 
+      JSON.stringify({ error: "Failed to translate image content", details: error }), 
       { 
         status: 500,
         headers: {

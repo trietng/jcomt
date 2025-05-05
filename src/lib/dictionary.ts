@@ -1,3 +1,5 @@
+import { Word } from "./common/model";
+
 // Mock dictionary definitions
 const dictionary: Record<string, string> = {
   are: "Present tense of the verb 'to be'.",
@@ -43,9 +45,12 @@ const dictionary: Record<string, string> = {
 }
 
 /**
- * Get a definition for a word from our mock dictionary
+ * Get a definition for a word from dictionary saved on D1
+ * Access serverless endpoint /api/words.
  */
-export function getDictionaryDefinition(word: string): string {
+export async function getDictionaryDefinition(word: string) {
   const cleanWord = word.toLowerCase().replace(/[^\w']/g, "")
-  return dictionary[cleanWord] || "No definition available."
+  const resp = await fetch(`/api/words/${cleanWord}`);
+  const data = await resp.json<Word>();
+  return data.definition || "No definition available."
 }

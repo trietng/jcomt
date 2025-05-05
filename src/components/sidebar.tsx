@@ -14,21 +14,26 @@ export function Sidebar({ translations }: SidebarProps) {
   const [selectedToken, setSelectedToken] = useState<string | null>(null)
   const [definition, setDefinition] = useState<string | null>(null)
 
-  const handleTokenClick = (token: string) => {
+  const handleTokenClick = async (token: string) => {
     const cleanToken = token.toLowerCase().replace(/[^\w']/g, "")
 
     if (selectedToken === cleanToken) {
       setSelectedToken(null)
       setDefinition(null)
     } else {
-      setSelectedToken(cleanToken)
-      const def = getDictionaryDefinition(cleanToken)
-      setDefinition(def)
+      try {
+        const def = await getDictionaryDefinition(cleanToken)
+        setSelectedToken(cleanToken)
+        setDefinition(def)
+      } catch (_) {
+        // suppress error
+      }
     }
   }
 
   const tokenGroups = useMemo(() => {
-    return (translations || []).map((translation) => {
+    if (!translations) return []
+    return translations.map((translation) => {
       const doc = wink.readDoc(translation.text.trim());
       return doc.tokens().out();
     })

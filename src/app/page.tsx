@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Book, Languages, Paintbrush, Save, Trash2, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { fake } from "@/lib/utils"
+import { dataUrlToFile, fake } from "@/lib/utils"
 import type { Translation } from "@/lib/common/model"
 import { drawTranslations } from "@/lib/canvas/draw"
 import { Sidebar } from "@/components/sidebar"
@@ -74,7 +74,13 @@ export default function IndexPage() {
   const handleTranslation = async () => {
     if (!image) return
     setStatus("translating")
-    const data = doTranslate()
+    const formData = new FormData();
+    const file =  await dataUrlToFile(image, "image.png");
+    formData.append("image", file);
+    const data = await fetch("/api/translate", {
+      method: "POST",
+      body: formData
+    }).then((res) => res.json<Translation[]>())
     setTranslations(data)
     setSidebarOpen(true)
     setStatus("translated")

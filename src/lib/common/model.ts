@@ -3,3 +3,7 @@ export interface Translation {
   text: string;
   translated_text: string;
 }
+export interface Word {
+  word: string;
+  definition: string;
+}

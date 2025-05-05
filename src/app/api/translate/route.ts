@@ -9,7 +9,6 @@ export async function POST(request: Request) {
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
     
     // Parse the FormData from the request
-    console.log(request)
     const formData = await request.formData();
     
     // Get the image file from the form data

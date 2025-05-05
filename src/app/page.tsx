@@ -2,19 +2,22 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Languages, Upload } from "lucide-react"
+import { useRef, useState } from "react"
+import { Languages, Type, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Pipeline } from "@/lib/pipeline"
-import { PanelDetectionAdapter, PanelDetectionInput, PanelDetectionOutput } from "@/lib/cv/panel-detection"
-import { DataUrlToPanelDetectionInputAdapter, MatToDataUrlAdapter } from "@/lib/cv/utils"
+import { createWorker, OEM, PSM } from "tesseract.js"
+import { mergeColumnBlocks } from "@/lib/ocr/merge"
+import { CanvasBlock } from "@/lib/ocr/models"
 
 export default function ImageUploadPage() {
   const [image, setImage] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [highlightedBlocks, setHighlightedBlocks] = useState<CanvasBlock[]>([])
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHighlightedBlocks([]);
     setIsUploading(true)
     const file = event.target.files?.[0]
 
@@ -22,6 +25,7 @@ export default function ImageUploadPage() {
       const reader = new FileReader()
       reader.onloadend = () => {
         setImage(reader.result as string)
+        event.target.value = '';
         setIsUploading(false)
       }
       reader.readAsDataURL(file)
@@ -30,23 +34,23 @@ export default function ImageUploadPage() {
     }
   }
 
+  const handleOCR = async () => {
+    if (!image) return;
+    // execute OCR
+    const worker = await createWorker("eng", OEM.TESSERACT_LSTM_COMBINED);
+    worker.setParameters({ tessedit_pageseg_mode: PSM.AUTO_OSD })
+    const { data: { blocks }} = await worker.recognize(image, {}, { blocks: true });
+    console.log("OCR completed");
+    if (blocks) {
+      const ocrResult = mergeColumnBlocks(blocks);
+      setHighlightedBlocks(ocrResult);
+    }
+    await worker.terminate();
+  }
+
   const handleTranslation = async () => {
     if (!image) return;
-    const preprocessor = new DataUrlToPanelDetectionInputAdapter((mat) => {
-      const adapter = new MatToDataUrlAdapter();
-      adapter.convert(mat).then((dataUrl) => {
-        setImage(dataUrl);
-      });
-    })
-    const preprocessed = await preprocessor.convert(image);
-    const pipeline = Pipeline.builder<PanelDetectionInput, PanelDetectionOutput>()
-      .name("panel_detection")
-      .splitter(new PanelDetectionAdapter())
-      .build();
-    const output = pipeline.run(preprocessed);
-    const adapter = new MatToDataUrlAdapter();
-    const dataUrl = await adapter.convert(output.panels[1]);
-    setImage(dataUrl);
+    
   }
 
   return (
@@ -79,15 +83,17 @@ export default function ImageUploadPage() {
       {/* Right side with image preview */}
       {image ? (
         <div className="w-1/2 h-screen relative border-l border-gray-200">
-          <img src={image || "/placeholder.svg"} alt="Uploaded image" className="object-contain w-full h-full" />
+          <img src={image || "/placeholder.svg"} alt="Uploaded image" className="object-contain w-full h-full relative" ref={imageRef}/>
         </div>
       ) : (
         <div className="hidden md:flex w-1/2 h-screen items-center justify-center bg-gray-100 border-l border-gray-200">
           <p className="text-gray-400">Image preview will appear here</p>
         </div>
       )}
-
-      <Button className="absolute size-12 right-0 top-0 cursor-pointer" onClick={() => handleTranslation()}><Languages size={18}/></Button>
+      <div className="flex flex-col gap-2 p-2 absolute right-0 top-0 bg-black/20 rounded-md">
+        <Button className="size-12 cursor-pointer" onClick={() => handleOCR()}><Type size={18}/></Button>
+        <Button className="size-12 cursor-pointer" onClick={() => handleTranslation()}><Languages size={18}/></Button>
+      </div>
     </main>
   )
 }

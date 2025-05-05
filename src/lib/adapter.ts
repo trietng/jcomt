@@ -1,5 +1,3 @@
-import { init } from "./utils";
-
 export interface Adapter<S, D> {
   convert: (src: S) => D 
 };

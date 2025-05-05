@@ -1,4 +1,4 @@
-import { GoogleGenAI, createUserContent } from "@google/genai";
+import { GoogleGenAI, Type, createUserContent } from "@google/genai";
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
@@ -6,14 +6,31 @@ export const runtime = 'edge';
 export async function POST(request: Request) {
   try {
     const { env } = getRequestContext();
-    console.log(env);
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
     
-    // Get the image blob from the request
-    const blob = await request.blob();
+    // Parse the FormData from the request
+    const formData = await request.formData();
     
-    // Convert blob to base64
-    const arrayBuffer = await blob.arrayBuffer();
+    // Get the image file from the form data
+    const imageFile = formData.get('image') as File;
+    
+    if (!imageFile) {
+      return new Response(
+        JSON.stringify({ error: "Image file is required" }), 
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    }
+    
+    // Get optional parameters if any
+    const targetLanguage = formData.get('targetLanguage')?.toString() || 'Vietnamese';
+    
+    // Convert file to base64
+    const arrayBuffer = await imageFile.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     let binary = '';
     uint8Array.forEach(byte => {
@@ -23,31 +40,44 @@ export async function POST(request: Request) {
     
     // Call Gemini API with the image and translation prompt
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-lite",
+      model: "gemini-2.5-flash-preview-04-17",
       contents: createUserContent([
         {
           inlineData: {
             data: base64,
-            mimeType: blob.type || "image/png",
+            mimeType: imageFile.type || "image/png",
           }
         },
         {
-          text: `
-            Translate the English texts in the image to Vietnamese in the following JSON format:
-            [
-              {
-                "text": <TEXT>,
-                "translated_text": <TRANSLATED_TEXT>
-              }
-              ...
-            ]
-          `
+          text: `Translate the English texts in the comic page to ${targetLanguage}. Take into account the gender of the speaker and keep newlines.`
         }
-      ])
+      ]),
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              'text': {
+                type: Type.STRING,
+                description: 'Original text',
+                nullable: false,
+              },
+              'translated_text': {
+                type: Type.STRING,
+                description: 'Translated text in all caps',
+                nullable: false,
+              }
+            },
+            required: ['text', 'translated_text'],
+          },
+        },
+      },
     });
     
     // Return the response
-    return new Response(JSON.stringify({ result: response.text }), { 
+    return new Response(response.text, { 
       status: 201,
       headers: {
         'Content-Type': 'application/json'

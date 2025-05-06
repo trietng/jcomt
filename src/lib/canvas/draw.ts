@@ -1,8 +1,8 @@
 import { Translation } from "../common/model";
 
-const FONT_HEIGHT = 30;
-const TEXT_VERTICAL_OFFSET = FONT_HEIGHT * 3;
-const TEXT_HORIZONTAL_OFFSET = FONT_HEIGHT * 3;
+const BASE_FONT_HEIGHT = 30;
+const TEXT_VERTICAL_OFFSET_FACTOR = 3;
+const TEXT_HORIZONTAL_OFFSET_FACTOR = 3;
 
 /**
  * Draw on speech bubbles
@@ -18,6 +18,11 @@ export async function drawTranslations(
   await image.decode();
   canvas.width = image.width;
   canvas.height = image.height;
+  // magic numbers !!!
+  const SCALE = canvas.height / 2250;
+  const FONT_HEIGHT = BASE_FONT_HEIGHT * SCALE;
+  const TEXT_VERTICAL_OFFSET = FONT_HEIGHT * TEXT_VERTICAL_OFFSET_FACTOR * SCALE;
+  const TEXT_HORIZONTAL_OFFSET = FONT_HEIGHT * TEXT_HORIZONTAL_OFFSET_FACTOR * SCALE;
   if (ctx) {
     ctx.drawImage(image, 0, 0);
     const font = `${FONT_HEIGHT}px Geologica`;

@@ -94,14 +94,15 @@ export async function POST(request: Request) {
     });
     
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: "Failed to translate image content" }), 
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    // return new Response(
+    //   JSON.stringify({ error: "Failed to translate image content" }), 
+    //   { 
+    //     status: 500,
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     }
+    //   }
+    // );
+    throw error;
   }
 }
